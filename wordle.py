@@ -1,5 +1,12 @@
-import random
+import requests
 from colorama import Fore, Style
+
+response = requests.get(
+    "https://random-word-api.herokuapp.com/word",
+    params={"length": 5})
+
+target_word=response.json()[0]
+print(target_word)
 
 
 def validate_word(word):
@@ -26,31 +33,29 @@ def parse_word(word, target_word):
     return return_word
 
 def check_win(word, target_word):
-    return word is target_word 
+    return word == target_word 
 
 
 
-        
-file = open("words.txt","r") #open a file in read mode
-target_word = random.choice(list(file))
-
-
-
+guesses_dict={}
 win_condition = False
 counter = 0
 
-while counter < 5 and win_condition is False:
+while counter < 5 and not win_condition:
     entered_word = input("Enter a five letter word: ")
     entered_word=entered_word.strip().replace(" ","")
-    print("You entered: " + entered_word)
     if validate_word(entered_word) is True:
+        if entered_word not in guesses_dict:
+            guesses_dict[entered_word]=counter+1
+        else:
+            print("You already guessed that word")
+            continue
         counter+=1
-        print("valid word")
         checked_word=parse_word(entered_word,target_word)
         print("checked word: " + checked_word)
-        if (check_win(checked_word,target_word)):
-            print("You won!")
+        if (check_win(entered_word,target_word)):
             win_condition=True
+            break;
         else:
             continue;
     else:
@@ -59,9 +64,9 @@ while counter < 5 and win_condition is False:
 
 
 if (win_condition):
-    print("You won!. It took you "+counter+" tries")
+    print("You won! It took you",counter,"tries")
 else:
-    print("You lost. The word was ", target_word)
+    print(Fore.RED + "You lost. The word was ", target_word , Style.RESET_ALL)
     
 
 
